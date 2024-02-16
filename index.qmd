@@ -1,23 +1,204 @@
 ---
-title: "Functional RAP"
+title: "Functional Reproducibility"
 subtitle: "Engineering reproducibility in the face of entropy"
 author: "Robin Gower"
-abstract: Presented at Data Connect 2022
-#format: revealjs
-format:
-  html:
-    standalone: true
-    embed-resources: true
-    header-includes: |
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet"> 
-    title-block-banner: true
+abstract: Presented at Berlin R User Group March-2024
+format: revealjs
+#format:
+#  html:
+#    standalone: true
+#    embed-resources: true
+#    header-includes: |
+#      <link rel="preconnect" href="https://fonts.googleapis.com">
+#      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+#      <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet"> 
+#    title-block-banner: true
 editor: source
 execute:
   echo: true
   eval: false
 ---
+
+## { .center }
+
+Reproducible <span style="font-weight: normal; font-style: italic">adj.</span>
+: (of a measurement, experiment etc) capable of being reproduced at a different time or place and by different people. 
+
+::: footer
+[en.wiktionary.org/wiki/reproducible](https://en.wiktionary.org/wiki/reproducible)
+:::
+
+::: notes
+Have you ever written the perfect program?
+
+Has it still run _unchanged_ 6 months later?
+
+Can your colleagues run it without you?
+
+Just because your analysis is executable, it doesn't mean the results are reproducible.
+
+Data ages. Libraries change. Machines differ. Servers go down. Bits rot. Entropy is inescapable.
+
+This talk explains how to engineer reproducibility drawing on techniques from functional programming and the MLOps movement. The code examples are designed for an R audience but the lessons apply to any language.
+:::
+
+
+
+## {background-color="#b00400" background-image="images/benevolent-monster.jpg" }
+
+::: { .footer style="color: #FFFFFF" }
+NASA (2011) "Benevolent Monster" Solar Flare
+:::
+
+::: notes
+Physics tells us that energy can't be created or destroyed but that doesn't make it an infinitely enduring resource.
+
+We can only *use* energy when we transform it from one form to another.
+:::
+
+## { background-color="#ecd9bd" background-image="images/wattschen-dampfmaschine-cropped.jpg" background-size="auto 80%"}
+
+<!-- ![](images/wattschen-dampfmaschine.jpg){height=100%} -->
+
+::: footer
+Schreinmer, R.M. (1912) Deutsches Museum, München
+
+© The Board of Trustees of the Science Museum released under a CC BY-NC-SA 4.0 license at [collection.sciencemuseumgroup.org.uk](https://collection.sciencemuseumgroup.org.uk/objects/co50970/portfolio-of-drawings-etc-used-in-the-reproduction-of-watts-rotative-engine-1788-drawings)
+:::
+
+::: notes
+We can turn the chemical energy stored in coal into heat by burning it. A fire turns water into steam which expands to drive pistons becoming mechanical energy that we can use. We do work by transforming energy.
+
+But once the water has become steam and expanded it can't expand again unless it is first condensed by cooling.
+:::
+
+---
+
+
+![](images/maxwells-demon.svg)
+
+::: notes
+In order to use energy we need order in the universe. An ordered division between hot places and cold ones.
+
+Once we've made use of the difference the heat evens out and now both places are merely warm. We can no longer use that energy.
+
+Though we're not lost energy we have created _entropy_. Entropy is energy that's not available to do work with.
+
+The pictures shows the thought experiment of Maxwell's daemon who opens a door between two vessels letting the faster gas molecules pass and closing it just in time to keep the colder ones separated. In doing so it appears to defy the 2nd law of thermodynamics by reversing entropy.
+:::
+
+## { background-image="images/ruins.jpg" }
+
+::: footer
+Photo by <a href="https://unsplash.com/@dmey503?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Dan Meyers</a> on <a href="https://unsplash.com/photos/abandoned-industrial-building-interior-Wy0RUh-1DyM?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
+:::
+
+::: notes
+In an isolated system, absent any magical demons, while the amount of energy remains the same, _entropy_ is always increasing. We can create pockets of order but the overall trend is towards disorder. Decay is inevitable.
+:::
+
+---
+
+## {background-color="#000000" background-image="images/webb-deep-field.png"}
+
+::: footer
+[Advanced Deep Extragalactic Survey](https://webbtelescope.org/contents/media/images/2023/127/01H1Q1CGJD51CDJTK2NHJWD06M) - NASA, ESA, CSA
+
+Brant Robertson (UC Santa Cruz), Ben Johnson (CfA), Sandro Tacchella (Cambridge), Marcia Rieke (University of Arizona), Daniel Eisenstein (CfA)
+:::
+
+::: notes
+Eventually our universe will reach a state of complete disorder. A uniform cold vacuum with no exploitable differences. The heat death of the universe.
+
+> This is the way the world ends, not with a bang but a whimper.
+
+:::
+
+## { background-color="#000000" background-transition="fade" transition-speed="slow"}
+
+::: notes
+
+Of course we don't generally worry about this cosmic tragedy and I'm not saying that the work we do attempting to bring order to data is futile. Far from it.
+
+This is merely a reminder that we should not have the hubris to expect our programs will work forever while our physical reality tends inexorably towards disorder. No-one, not even the greatest engineers or scientists, are exempt.
+
+We have reason for hope though. Not least because we have a tool that exists beyond the physical constraints of reality...
+
+:::
+
+
+## { background-color="#000000" .center transition="fade" }
+
+<span style="font-size: 200%">$$f(x) = \frac{1}{\sigma \sqrt{2\pi} } e^{-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2}$$</span>
+
+::: notes
+
+The mathematics we use is pure and eternal. Functions are infinitely reproducible. 
+
+Here's the probability density function of the normal distribution.
+
+Pi and Eulers number are real constants. Given the same mean and standard deviation this formula will always plot the same bell-curve and return the same probability density for any given value of x.
+
+This is all very well, but - as beautiful as this formula is - it's not much use on it's own.
+
+:::
+
+---
+
+
+```{r rnorm-density, echo=T, eval=T}
+plot(dnorm, -3, 3, main="The Standard Normal Distribution")
+```
+
+::: notes
+In practical terms we need to do computations to use that maths and computers are certainly subject to entropy.
+
+Computation sits atop a whole stack of dependencies from your code though packages and programming languages down to machine instructions and the bare metal itself. None of this is permanent.
+:::
+
+---
+
+::: {layout-ncol=2}
+
+![](images/leftpad.png)
+
+![](images/dependency.png)
+:::
+
+::: {.notes}
+Consider the tale of Leftpad... not even a dozen lines of JavaScript was removed from NPM in 2016. It brought front-end development to a screeching halt as build failures cascaded across the web.
+
+:::
+
+::: footer
+[theregister.com/2016/03/23/npm_left_pad_chaos/](https://www.theregister.com/2016/03/23/npm_left_pad_chaos/)
+
+CC-BY-NC 2.5 [xkcd.com/2347/](https://xkcd.com/2347/)
+:::
+
+## { background-image="images/gallery-404.png"}
+
+::: notes
+
+Consider Gallery 404, a museum of obsolete digital art that was exhibited at the last Berlin Creative Code Stammtisch. None of these art works are reproducible any longer. Server's go down. Domains expire. Adobe flash is long gone. 
+
+The curator explained how some museums nowadays expect to be supplied with working hardware (with backup systems) in order to continue running digital art over the longer term.
+
+:::
+
+## { .center } Functional Reproducibility
+
+::: notes
+So, how can we guard against this inevitable bit rot?
+
+How can we design and engineer our code to be reproducible?
+
+It's time to leave the metaphysics and consider some more practical guidance.
+
+As I alluded to earlier, we can turn to maths for help and in code that manifests most directly in terms of functional programming. I'll explain some lessons from that approach then go on to describe ideas from software engineering that have found a home in the data work under the label "MLOps".
+
+Let's start though, with a question...
+:::
 
 
 
@@ -25,8 +206,8 @@ execute:
 
 Read from a database
 
-```{python eval=F}
-df = pandas.read_sql("SELECT * FROM USERS", connection)
+```{r eval=F}
+users <- DBI::dbReadTable(connection, "users")
 ```
 
 Draw a sample at random
@@ -38,7 +219,7 @@ coin_tosses <- sample(c("heads","tails"), 10, replace = TRUE)
 Write to the filesystem
 
 ```{r eval=F}
-readr::write_csv(data, "~/input.csv")
+readr::write_csv(data, "output.csv")
 ```
 
 ::: notes
@@ -56,9 +237,7 @@ None of those statements - even writing to disk - are reproducible.
 
 Let's explore why and what you can do about it.
 
-This talk hopes to share some lessons from a data-engineering perspective with data-scientists and analysts.
-
-To begin let's think about what it means to be reproducible.
+We saw the definition at the beginning, but what does it really mean to be reproducible?
 :::
 
 ## Pure functions are reproducible
@@ -107,7 +286,7 @@ digraph D {
 ::: notes
 This is all very well in theory but we can't continue piping data around in circles *ad nauseum*. At some point we have to interact with the outside world - read from a database, deploy a website, email a report. In practice we need functions with side-effects.
 
-Side-effects are intended consequences that happen outside of a function or a pipeline's output. We also use the term "side-effect" to refer to causes that exist outside of a function or a pipeline's inputs.
+Side-effects are intended consequences that happen outside of a function or a pipeline's output. We also use the term "side-effect" to refer to causes that exist outside of a function or a pipeline's direct inputs, that is to say *non-local state*.
 
 These side-effects are what make our pipelines useful allowing them to interact with the world. They're also what cause our pipelines to become non-reproducible.
 
@@ -236,7 +415,7 @@ We might not always want perfect reproducibility. The key is in making that choi
 Input is a side-effect
 
 ```{r}
-df <- readr::read_csv("/home/robin/data-040422-final.csv")
+df <- readr::read_csv("/home/robin/data-290224-final.csv")
 ```
 :::
 
@@ -431,12 +610,6 @@ Don't just say it's reproducible. Prove it!
 - Contain side-effects and make dependencies explicit
 - Track (data) version history and automate workflows for reproducible builds
 
-## The world won't let you rap,<br />and what to do about it
-<br />
-[rick@swirrl.com]{ style="font-weight: 100; font-size: 1em;"}
+## Functional Reproducibility
 
 [robin@infonomics.ltd.uk]{ style="font-weight: 100; font-size: 1em;"}
-
-<br />
-
-![](images/swirrl-becoming-small-rect.png){ style="height: 1.5em"}
