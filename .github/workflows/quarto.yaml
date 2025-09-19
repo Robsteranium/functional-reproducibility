@@ -21,7 +21,7 @@ jobs:
             any::reticulate
       - uses: quarto-dev/quarto-actions/render@v2
         with:
-          to: html
+          to: all
       - uses: quarto-dev/quarto-actions/publish@v2
         with:
           target: gh-pages
