@@ -5,7 +5,7 @@ execute:
 format:
   revealjs:
     standalone: true
-    output-file: functional-reproducibility-slides.html
+    output-file: slides.html
   html:
     title: "Functional Reproducibility"
     subtitle: "Engineering reproducibility in the face of entropy"
@@ -14,7 +14,7 @@ format:
     title-slide-attributes: 
     data-background-image: images/kendal-hnysCJrPpkc-unsplash.jpg
     standalone: true
-    output-file: functional-reproducibility-doc.html
+    output-file: index.html
     toc: true
     #embed-resources: true
     header-includes: |
