@@ -19,12 +19,16 @@ jobs:
             any::knitr
             any::rmarkdown
             any::reticulate
-      - uses: quarto-dev/quarto-actions/render@v2
+      - name: "Quarto Render"
+        shell: bash
+        run: |
+          quarto render
+      - name: "Configure Pages"
+        uses: actions/configure-pages@v5
+      - name: "Upload Pages Artifact"
+        uses: actions/upload-pages-artifact@v3
         with:
-          to: all
-      - uses: quarto-dev/quarto-actions/publish@v2
-        with:
-          render: false
-          target: gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: "_output"
+      - name: "Deploy Pages"
+        id: deployment
+        uses: actions/deploy-pages@v4
