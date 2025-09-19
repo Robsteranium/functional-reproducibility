@@ -1,5 +1,4 @@
 project:
-  title: "Functional RAP"
+  output-dir: _output
 
-
-
+editor: source

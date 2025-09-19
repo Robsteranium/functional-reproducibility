@@ -1,26 +1,43 @@
 ---
-#title: "Functional Reproducibility"
-#subtitle: "Engineering reproducibility in the face of entropy"
-#author: "Robin Gower"
-#abstract: Presented at Berlin R User Group March-2024
-#title-slide-attributes: 
-#  data-background-image: images/kendal-hnysCJrPpkc-unsplash.jpg
-format: revealjs
-#format:
-#  html:
-#    standalone: true
-#    embed-resources: true
-#    header-includes: |
-#      <link rel="preconnect" href="https://fonts.googleapis.com">
-#      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-#      <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet"> 
-#    title-block-banner: true
-editor: source
 execute:
   echo: true
   eval: false
+format:
+  revealjs:
+    standalone: true
+    output-file: functional-reproducibility-slides.html
+  html:
+    title: "Functional Reproducibility"
+    subtitle: "Engineering reproducibility in the face of entropy"
+    author: "Robin Gower"
+    abstract: Presented at Berlin R User Group March-2024
+    title-slide-attributes: 
+    data-background-image: images/kendal-hnysCJrPpkc-unsplash.jpg
+    standalone: true
+    output-file: functional-reproducibility-doc.html
+    toc: true
+    #embed-resources: true
+    header-includes: |
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet">
+    title-block-banner: images/kendal-hnysCJrPpkc-unsplash.jpg
+    include-after-body:
+      text: |
+        <footer class="footer quarto-title-block">
+          <div class="quarto-title-banner page-columns page-full" style="margin-bottom: 0px">
+            <div class="column-body">
+              <h3>robin@infonomics.ltd.uk</h3>
+              <p><a href="https://robsteranium.github.io/functional-reproducibility/">robsteranium.github.io/functional-reproducibility</a></p>
+            </div>
+          </div>
+        </footer>
 ---
 
+
+
+
+::: {.content-visible when-format="revealjs"}
 ## { .center background-image="images/kendal-hnysCJrPpkc-unsplash.jpg" style="color: whitesmoke" }
 
 ::: {.r-fit-text}
@@ -37,9 +54,18 @@ Functional Reproducibility
 ::: footer
 Photo by <a href="https://unsplash.com/@hikendal?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Kendal</a> on <a href="https://unsplash.com/photos/green-ferns-on-a-black-background-hnysCJrPpkc?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
 :::
+:::
 
 
+
+
+::: {.content-visible when-format="revealjs"}
 ## { .center }
+:::
+
+::: {.content-visible when-format="html" unless-format="revealjs"}
+# You can't escape entropy
+:::
 
 Reproducible <span style="font-weight: normal; font-style: italic">adj.</span>
 : (of a measurement, experiment etc) capable of being reproduced at a different time or place and by different people. 
@@ -59,15 +85,21 @@ Just because your analysis is executable, it doesn't mean the results are reprod
 
 Data ages. Libraries change. Machines differ. Servers go down. Bits rot. Entropy is inescapable.
 
-This talk explains how to engineer reproducibility drawing on techniques from functional programming and the MLOps movement. The code examples are designed for an R audience but the lessons apply to any language.
+We can learn how to engineer reproducibility by drawing on techniques from functional programming and the MLOps movement. The code examples are provided in R <!-- and Python --> but the lessons apply to any language.
 :::
 
 
 
-## {background-color="#b00400" background-image="images/benevolent-monster.jpg" }
 
+::: {.content-visible when-format="revealjs"}
+## {background-color="#b00400" background-image="images/benevolent-monster.jpg" }
 ::: { .footer style="color: #FFFFFF" }
 NASA (2011) "Benevolent Monster" Solar Flare
+:::
+:::
+
+::: {.content-visible when-format="html" unless-format="revealjs"}
+![NASA (2011) "Benevolent Monster" Solar Flare](images/benevolent-monster.jpg)
 :::
 
 ::: notes
@@ -76,31 +108,42 @@ Physics tells us that energy can't be created or destroyed but that doesn't make
 We can only *use* energy when we transform it from one form to another.
 :::
 
+
+
+
+::: {.content-visible when-format="revealjs"}
 ## { background-color="#ecd9bd" background-image="images/wattschen-dampfmaschine-cropped.jpg" background-size="auto 80%"}
-
-<!-- ![](images/wattschen-dampfmaschine.jpg){height=100%} -->
-
 ::: footer
 Schreinmer, R.M. (1912) Deutsches Museum, München
 
 © The Board of Trustees of the Science Museum released under a CC BY-NC-SA 4.0 license at [collection.sciencemuseumgroup.org.uk](https://collection.sciencemuseumgroup.org.uk/objects/co50970/portfolio-of-drawings-etc-used-in-the-reproduction-of-watts-rotative-engine-1788-drawings)
 :::
+:::
+
+::: {.content-visible when-format="html" unless-format="revealjs"}
+![Schreinmer, R.M. (1912) Deutsches Museum, München](images/wattschen-dampfmaschine.jpg)
+:::
 
 ::: notes
-We can turn the chemical energy stored in coal into heat by burning it. A fire turns water into steam which expands to drive pistons becoming mechanical energy that we can use. We do work by transforming energy.
+We can turn the chemical energy stored in coal into heat by burning it. A fire turns water into steam. Steam expands to drive pistons becoming mechanical energy that we can use. We do work by transforming energy.
 
 But once the water has become steam and expanded it can't expand again unless it is first condensed by cooling.
 
 Though we've not lost energy we have created _entropy_. Entropy is energy that's not available to do work with.
 :::
 
-## {.center}
 
-![](images/increasing_disorder.svg)
+
+
+::: {.content-visible when-format="revealjs"}
+## {.center}
 
 ::: footer
 [Increasing Disorder CC BY Htkym](https://commons.wikimedia.org/wiki/File:Increasing_disorder.svg)
 :::
+:::
+
+![Increasing Disorder CC BY Htkym](images/increasing_disorder.svg)
 
 ::: notes
 In order to use energy we need order in the universe. As depicted on the left, we have an ordered division between a cold place A and a hot place B.
@@ -108,28 +151,46 @@ In order to use energy we need order in the universe. As depicted on the left, w
 Once we've made use of the difference the heat evens out and now both places are merely warm, as depicted on the right.
 :::
 
-## {.center}
 
-![](images/maxwells-demon.svg)
+
+
+::: {.content-visible when-format="revealjs"}
+## {.center}
 
 ::: footer
 [Maxwell's Demon CC BY Htkym](https://commons.wikimedia.org/wiki/File:Maxwell%27s_demon.svg)
 :::
+:::
+
+![Maxwell's Demon CC BY Htkym](images/maxwells-demon.svg)
 
 ::: notes
 The picture shows a thought experiment. Maxwell's daemon opens a door between two vessels letting the faster gas molecules pass and closing it just in time to keep the slower ones separated. In doing so it appears to defy the 2nd law of thermodynamics by creating order from disorder and reversing entropy.
 :::
 
+
+
+
+::: {.content-visible when-format="revealjs"}
 ## { background-image="images/ruins.jpg" }
 
 ::: footer
 Photo by <a href="https://unsplash.com/@dmey503?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Dan Meyers</a> on <a href="https://unsplash.com/photos/abandoned-industrial-building-interior-Wy0RUh-1DyM?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
+:::
+:::
+
+::: {.content-visible when-format="html" unless-format="revealjs"}
+![Abandoned industrial building by Dan Meyers on Unsplash](images/ruins.jpg)
 :::
 
 ::: notes
 In an isolated system, absent any magical demons, while the amount of energy remains the same, _entropy_ is always increasing. We can create pockets of order but the overall trend is towards disorder. Decay is inevitable.
 :::
 
+
+
+
+::: {.content-visible when-format="revealjs"}
 ---
 
 ## {background-color="#000000" background-image="images/webb-deep-field.png"}
@@ -139,16 +200,24 @@ In an isolated system, absent any magical demons, while the amount of energy rem
 
 Brant Robertson (UC Santa Cruz), Ben Johnson (CfA), Sandro Tacchella (Cambridge), Marcia Rieke (University of Arizona), Daniel Eisenstein (CfA)
 :::
+:::
+
+::: {.content-visible when-format="html" unless-format="revealjs"}
+![[Advanced Deep Extragalactic Survey](https://webbtelescope.org/contents/media/images/2023/127/01H1Q1CGJD51CDJTK2NHJWD06M) - NASA, ESA, CSA](images/webb-deep-field.png)
+:::
 
 ::: notes
 Eventually our universe will reach a state of complete disorder. A uniform cold vacuum with no exploitable differences. The heat death of the universe.
 
-> This is the way the world ends, not with a bang but a whimper.
-
+> This is the way the world ends, not with a bang but a whimper - T. S. Eliot
 :::
 
-## { background-color="#000000" background-transition="fade" transition-speed="slow"}
 
+
+
+::: {.content-visible when-format="revealjs"}
+## { background-color="#000000" background-transition="fade" transition-speed="slow"}
+:::
 ::: notes
 
 Of course we don't generally worry about this cosmic tragedy and I'm not saying that the work we do attempting to bring order to data is futile. Far from it.
@@ -159,7 +228,15 @@ We have reason for hope though. Not least because we have a tool that exists bey
 :::
 
 
+
+
+::: {.content-visible when-format="revealjs"}
 ## { background-color="#000000" .center transition="fade" }
+:::
+
+::: {.content-visible when-format="html" unless-format="revealjs"}
+# Mathematics is eternal
+:::
 
 <span style="font-size: 200%">$$f(x) = \frac{1}{\sigma \sqrt{2\pi} } e^{-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2}$$</span>
 
@@ -172,11 +249,14 @@ Here's the probability density function of the normal distribution.
 Pi and Eulers number are _real_ constants. Given the same mean and standard deviation this formula will always plot the same bell-curve and so always return the same probability density for any given value of x.
 
 This is all very well, but - as beautiful as this formula is - it's not much use on it's own.
-
 :::
 
-## { transition="slide-in" }
 
+
+
+::: {.content-visible when-format="revealjs"}
+## { transition="slide-in" }
+:::
 
 ```{r rnorm-density, echo=T, eval=T}
 plot(dnorm, -3, 3, main="The Standard Normal Distribution")
@@ -190,37 +270,56 @@ In practical terms we need to do computations to use maths and computers are cer
 Computation sits on top of a whole stack of dependencies from your code though packages and programming languages down to machine instructions and the bare metal itself. None of this is permanent.
 :::
 
+
+
+
+::: {.content-visible when-format="revealjs"}
 ---
-
-::: {layout-ncol=2}
-
-![](images/leftpad.png)
-
-![](images/dependency.png)
-:::
-
-::: {.notes}
-Consider the tale of Leftpad... not even a dozen lines of JavaScript was removed from NPM in 2016. It brought front-end development to a screeching halt as build failures cascaded across the web.
-
-:::
-
 ::: footer
 [theregister.com/2016/03/23/npm_left_pad_chaos/](https://www.theregister.com/2016/03/23/npm_left_pad_chaos/)
 
 CC-BY-NC 2.5 [xkcd.com/2347/](https://xkcd.com/2347/)
 :::
-
-## { background-image="images/gallery-404.png"}
-
-::: notes
-
-Consider Gallery 404, a museum of obsolete digital art that was exhibited at the last Berlin Creative Code Stammtisch. None of these art works are reproducible any longer. Server's go down. Domains expire. Adobe flash is long gone. 
-
-The curator explained how some museums nowadays require digital art to be supplied along with working hardware (and backup systems) so that it can continue running over the longer term.
-
 :::
 
+::: {.content-visible when-format="html" unless-format="revealjs"}
+# Computation is impermanent
+:::
+
+::: {layout-ncol=2}
+![theregister.com/2016/03/23/npm_left_pad_chaos/](images/leftpad.png)
+
+![CC-BY-NC 2.5 xkcd.com/2347/](images/dependency.png)
+:::
+
+::: {.notes}
+Consider the tale of Leftpad... not even a dozen lines of JavaScript was removed from NPM in 2016. It brought front-end development to a screeching halt as build failures cascaded across the web.
+:::
+
+
+
+::: {.content-visible when-format="revealjs"}
+## { background-image="images/gallery-404.png"}
+:::
+::: {.content-visible when-format="html" unless-format="revealjs"}
+![Gallery 404](images/gallery-404.png)
+:::
+
+::: notes
+Consider Gallery 404, a museum of obsolete digital art <!-- that was exhibited at the last Berlin Creative Code Stammtisch-->. None of these art works are reproducible any longer. Server's go down. Domains expire. Adobe flash is long gone. 
+
+Some museums now require digital art to be supplied along with working hardware (and backup systems) so that it can continue running over the longer term.
+:::
+
+
+
+
+::: {.content-visible when-format="revealjs"}
 ## Engineering reproducibility <br /> in the face of entropy { .center }
+:::
+::: {.content-visible when-format="html" unless-format="revealjs"}
+# Engineering reproducibility in the face of entropy
+:::
 
 ::: notes
 So, how can we guard against this inevitable bit rot?
@@ -229,38 +328,42 @@ How can we design and engineer our code to be reproducible?
 
 It's time to leave the metaphysics and consider some more practical guidance.
 
-As I alluded to earlier, we can turn to maths for help. In code that manifests most directly in terms of functional programming. I'll explain some lessons from that approach then go on to describe ideas from software engineering that have found a home in the data world under neologisms like "DataOps", "MLOps" or "ModelOps". Outside of the marketing hype we can think of this as just rigorous data engineering.
+As I alluded to earlier, we can turn to maths for help. In code that manifests most directly in terms of _functional programming_. I'll explain some lessons from that approach then go on to describe ideas from software engineering that have found a home in the data world under neologisms like "DataOps", "MLOps" or "ModelOps". Outside of the marketing hype we can think of this as just rigorous data engineering.
 
 Let's start though, with a question...
 :::
 
 
+## Isn't code reproducible?
 
-## Which of the following is not reproducible?
+::: notes
+Which of these statements is reproducible?
+:::
 
-Read from a database
+Reading from a database:
 
-```{r eval=F}
+```{r read-database, eval=F}
 users <- DBI::dbReadTable(connection, "users")
 ```
 
-Draw a sample at random
+Drawing a sample at random:
 
-```{r eval=F}
+```{r sample-randomly, eval=F}
 coin_tosses <- sample(c("heads","tails"), 10, replace = TRUE)
 ```
 
-Write to the filesystem
+Writing to a filesystem:
 
-```{r eval=F}
+```{r write-file, eval=F}
 readr::write_csv(data, "output.csv")
 ```
 
-::: notes
-Which of these statements are not reproducible?
-:::
 
+
+
+::: {.content-visible when-format="revealjs"}
 # None of them are reproducible!
+:::
 
 ::: notes
 None of them are. This was a trick question!
@@ -274,12 +377,20 @@ Let's explore why and what you can do about it.
 We saw the definition at the beginning, but what does it really mean to be reproducible?
 :::
 
-## Pure functions are reproducible
 
-```{dot}
+
+
+::: {.content-visible when-format="revealjs"}
+## Pure functions are reproducible
+:::
+::: {.content-visible when-format="html" unless-format="revealjs"}
+### Pure functions are reproducible
+:::
+
+```{dot input-output}
 //| fig-height: 6
-//| eval: true
 //| echo: false
+//| eval: true
 
 digraph D {
   node [style="filled" penwidth=0 fillcolor="#f0f0ff" fontcolor=black fontname="Source Sans Pro"]
@@ -290,21 +401,31 @@ digraph D {
 ```
 
 ::: notes
-Pure functions are reproducible.
+::: {.content-visible when-format="revealjs"}
+Pure functions _are_ reproducible.
+:::
 
-The output of a pure function only depends on it's input. The result doesn't change if it's calculated a second time or by another person - for the same input you always get the same output. You could replace the function call with it's return value in your program. This is known as *referential transparency*. Indeed you could replace the function body with a lookup table that records the relevant output for each input.
+The output of a pure function only depends on it's input. The result doesn't change if it's calculated a second time or by another person; for the same input you always get the same output. You could replace a function call with it's return value in your program. This is known as *referential transparency*. Indeed you could replace the function body with a lookup table that records the relevant output for each input.
 
 A pure function has no side effects. Running it doesn't change the state of the world, the only consequence is the output value it returns. Pure functions are *idempotent*, you can run them as many times as you like and get the same result.
 
 Pure functions are composable. If you combine one pure function with another then the result will also be pure. A pipeline composed of functions is much like one giant function.
 :::
 
-## Side-effects aren't reproducible
 
-```{dot eval=T}
+
+
+::: {.content-visible when-format="revealjs"}
+## Side-effects aren't reproducible
+:::
+::: {.content-visible when-format="html" unless-format="revealjs"}
+### Side-effects aren't reproducible
+:::
+
+```{dot side-effect}
 //| fig-height: 6
-//| eval: true
 //| echo: false
+//| eval: true
 
 digraph D {
   node [style="filled" penwidth=0 fillcolor="#f0f0ff" fontcolor=black fontname="Source Sans Pro"]
@@ -331,7 +452,7 @@ This mightn't be very obvious if it's the first time you're hearing this, so let
 
 ## Non-local state makes functions sensitive to context
 
-```{r eval=T}
+```{r counter-global, eval=T}
 counter <- 0
 
 show_count <- function() {
@@ -342,7 +463,7 @@ show_count()
 ```
 
 Sometime later...
-```{r eval=T}
+```{r counter-global-increment, eval=T}
 counter <- counter + 1
 
 show_count()
@@ -351,7 +472,7 @@ show_count()
 ::: notes
 Here we can see a side-effecting `show_count()` function. It implicitly depends on the `counter` variable that is defined in the global scope. This means that it's result depends on the context in which it is run.
 
-Any time you call `show_count()` you could get a different result. It isn't reproducible. If the counter changes, then so does the result.
+Any time you call `show_count()` you could get a different result. It isn't reproducible. If the value of `counter` changes, then so does the result.
 
 This function also has no return value. The call to `cat` or `print` is itself a side-effect. In this case a `NULL` is returned invisibly. We can't use it in a reproducible pipeline.
 
@@ -362,7 +483,7 @@ Let's refactor this into a pure function.
 
 ## Explicit inputs/ outputs let us separate code and context
 
-```{r eval=T}
+```{r counter-local, eval=T}
 counter <- 0
 
 describe_count <- function(count) {
@@ -373,7 +494,7 @@ print(describe_count(counter))
 ```
 
 Sometime later...
-```{r eval=T}
+```{r counter-local-increment, eval=T}
 counter <- counter + 1
 
 print(describe_count(counter))
@@ -399,13 +520,13 @@ Pure functions operating on immutable data are reproducible. You lose these guar
 
 ## The context isn't always apparent
 
-```{r eval=T}
+```{r toss-coins-first, eval=T}
 toss_coins <- function(n) sample(c("heads","tails"), n, replace = TRUE)
 
 toss_coins(5)
 ```
 Sometime later...
-```{r eval=T}
+```{r toss-coins-later, eval=T}
 toss_coins(5)
 ```
 
@@ -422,18 +543,18 @@ In software the RNG is not truly random but rather a pseudo-random process. It g
 
 This is a side-effect for our function, causing it's output to differ each time it's run.
 
-Indeed each time I generate *these slides* I get a different set of coin tosses. Although executable, this slide (and a consequence the whole deck) isn't reproducible.
+Indeed each time I render *this document* I get a different set of coin tosses. Although executable, this example (and a consequence the whole document) isn't reproducible.
 :::
 
 ## We can make the context explicit
 
-```{r eval=T}
+```{r toss-coins-seed-first, eval=T}
 set.seed(1234) # set state deterministically
 
 toss_coins(5)
 ```
 Sometime later...
-```{r eval=T}
+```{r toss-coins-seed-later, eval=T}
 set.seed(1234) # reset the state again
 
 toss_coins(5)
@@ -456,7 +577,7 @@ We might not always want perfect reproducibility. The key is in making that choi
 ::: incremental
 Input is a side-effect
 
-```{r}
+```{r read-csv}
 df <- readr::read_csv("/home/robin/data-290224-final.csv")
 ```
 :::
@@ -464,7 +585,7 @@ df <- readr::read_csv("/home/robin/data-290224-final.csv")
 ::: incremental
 Output is a side-effect
 
-```{r}
+```{r write-csv}
 readr::write_csv(result, "~/results/output.csv")
 ```
 :::
@@ -485,7 +606,7 @@ These problems become all the more apparent with APIs or databases where network
 
 ## Dependency-injection is explicit
 
-```{r}
+```{r global-connection}
 library(DBI)
 
 my_conn <- dbConnect(...)
@@ -493,7 +614,7 @@ my_conn <- dbConnect(...)
 
 Instead of relying on global state:
 
-```{r}
+```{r get-global-connection}
 get_data <- function() {
   dbReadTable(my_conn, "users")
 }
@@ -503,7 +624,7 @@ get_data()
 
 We can make dependencies explicit:
 
-```{r}
+```{r get-local-connection}
 get_data <- function(connection) {
   dbReadTable(connection, "users")
 }
@@ -527,19 +648,19 @@ The code is more modular. We can re-use this code within the same program allowi
 
 Command-line arguments
 
-```{bash}
+```{bash cli-args}
 R -f pipeline.r input.csv output.parquet
 ```
 
 Environment variables
 
-```{bash}
+```{bash env-vars}
 env DB="http://user:pw@localhost:1337" R -f pipeline.r
 ```
 
 Configuration data
 
-```{bash}
+```{bash configuration}
 R -f pipeline.r configuration.yaml
 ```
 
@@ -552,12 +673,12 @@ Likewise we can pull side-effects through to the very edges of our pipelines, pa
 
 This means the pipeline no longer has to be concerned with coordinating state. We may want some graceful error handling, but the pipeline itself should be context-free and reproducible.
 
-Indeed extending this practice into the execution context itself is what leads to the Infrastructure as Code and DevOps movement where machines and services can themselves be provisioned reproducibly from declarative configuration.
+Extending this practice into the execution context itself is what leads to the Infrastructure as Code and GitOps/ DevOps movement where machines and services can themselves be provisioned reproducibly from declarative configuration.
 :::
 
 ## Functional pipeline,<br />configured context
 
-```{dot eval=T}
+```{dot functional-pipeline}
 //| fig-height: 5
 //| eval: true
 //| echo: false
@@ -590,7 +711,7 @@ This also helps sub-divide the code into well-factored modules as each component
 You'll note that this hasn't really solved the ultimate cause of our problems. As I explained at the outset, we shouldn't expect to ever be able to fix the rest of the universe in place. The best we can do is hope to contain the unreliable bits, pushing them to the edges so we can carve out a space to pursue reproducibility. A small domain where we, like Maxwell's Daemon, can reverse entropy and bring order to our world.
 :::
 
-# Lessons from engineering
+# Lessons from software development
 
 ::: notes
 We can go a step further than the above and strive for reproducibility in our interaction with data outside of the pipeline.
@@ -598,14 +719,23 @@ We can go a step further than the above and strive for reproducibility in our in
 In these final slides I'll discuss some lessons the data community can learn from software development. In particular version control and continuous delivery.
 :::
 
-## { background-image="images/kazuend-cCthPLHmrzI-unsplash.jpg" }
 
+
+
+::: { .content-visible when-format="revealjs"}
+## { background-image="images/kazuend-cCthPLHmrzI-unsplash.jpg" }
 <h2 style="color: whitesmoke">Versions are values over time</h2>
 
 ::: footer
 <span style="color: whitesmoke">
 Photo by <a href="https://unsplash.com/@kazuend?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">kazuend</a> on <a href="https://unsplash.com/photos/body-river-surrounded-by-dress-cCthPLHmrzI?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
 </span>
+:::
+:::
+
+::: { .content-visible when-format="html" unless-format="revealjs"}
+## Versions are values over time
+![[kazuend](https://unsplash.com/photos/body-river-surrounded-by-dress-cCthPLHmrzI?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on Unsplash](images/kazuend-cCthPLHmrzI-unsplash.jpg)
 :::
 
 ::: notes
@@ -616,7 +746,11 @@ But we need to change things to do useful work over time as the external context
 Versions identify immutable states of data as it evolves over time.
 :::
 
+
+
+::: { .content-visible when-format="revealjs"}
 ## { .center }
+:::
 
 ![](images/heraclitus.jpg){ .r-stretch style="float:right" }
 
@@ -633,29 +767,52 @@ You can't step in the same river twice. Time marches on. The river is formed of 
 :::
 
 
-## { background-image="images/heraclitus-1.png" }
 
+::: { .content-visible when-format="revealjs"}
+## { background-image="images/heraclitus-1.png" }
+:::
+::: { .content-visible when-format="html" unless-format="revealjs"}
+![](images/heraclitus-1.png)
+:::
 ::: notes
 Here's Heraclitus standing in a river...
 :::
 
 
-## { background-image="images/heraclitus-2.png" }
 
+
+::: { .content-visible when-format="revealjs"}
+## { background-image="images/heraclitus-2.png" }
+:::
+::: { .content-visible when-format="html" unless-format="revealjs"}
+![](images/heraclitus-2.png)
+:::
 ::: notes
 ... different gallons of water flow round his feet...
 :::
 
 
-## { background-image="images/heraclitus-3.png" }
 
+
+::: { .content-visible when-format="revealjs"}
+## { background-image="images/heraclitus-3.png" }
+:::
+::: { .content-visible when-format="html" unless-format="revealjs"}
+![](images/heraclitus-3.png)
+:::
 ::: notes
 ... what’s constant is the riverbed.
 :::
 
 
-## { background-image="images/heraclitus-4.png" }
 
+
+::: { .content-visible when-format="revealjs"}
+## { background-image="images/heraclitus-4.png" }
+:::
+::: { .content-visible when-format="html" unless-format="revealjs"}
+![](images/heraclitus-4.png)
+:::
 ::: notes
 It’s helpful for us to distinguish between the water and the riverbed.
 
@@ -664,16 +821,21 @@ This is how we name rivers. The name refers to the river bed, not the water in i
 We can apply this as a metaphor for data pipelines. We distinguish the output from each instance of it.
 :::
 
-## {.center}
 
-```{shell eval=F}
+
+
+::: { .content-visible when-format="revealjs"}
+## {.center}
+:::
+
+```{bash eval=F}
 alisonhorst/palmerpenguins v0.1.0
 
 s3://alisonhorst/palmerpenguins.csv?versionId=c19a904
 ```
 
 ::: notes
-Ultimately the version is identified uniquely only by the values in the data. This becomes cumbersome and we need a more succinct version identifier. Instead we can identity versions by a name formed of two parts. One is a location or label we can use as a reference. The other is the version or state in time. The named output and versioned instances.
+Ultimately the version is identified uniquely only by the values in the data. This becomes cumbersome so we need a more succinct version identifier. We can identity versions by a name formed of two parts. One is a location or label we can use as a reference. The other is the version or state in time. The named output and versioned instances.
 
 You should certainly use a version control tool like `git` to manage your code and models but line-by-line diffs and patches would be a very inefficient way to store data versions. For data, the parallel here isn't to source control but to software releases.
 
@@ -705,15 +867,21 @@ Just because you can re-run your pipeline locally, it doesn't prove that it's re
 
 A build system runs your workflow recording the versions of the input data, source code, and output. The pipeline run itself is immutable and identified for posterity with a build number. Done correctly, we don't need to reproduce the pipeline. This contract serves as a guarantee that you'll simply get the same result.
 
+::: { .content-visible when-format="revealjs"}
 CLICK
+:::
 
 This requires that the process of assembling your dependencies is automated and reproducible itself. No more hunting through messages or chasing colleagues to find the random excel file that makes the pipeline work. You can't expect a build server to study the readme and figure it out for themselves. Tacit knowledge must be explicitly codified. You can't claim that everything's fine just because "it works on my machine". The build server is a shared consensus on configuration. A canonical source you can refer to to see how things work. Automation enables collaboration.
 
+::: { .content-visible when-format="revealjs"}
 CLICK
+:::
 
 Building on an ephemeral stack further enforces the discipline by preventing you from relying on state. I'd argue that the success of containerisation comes as much from virtualisation as from the fact that `Dockerfile`s, for example, automate dependency management down to the operating system level.
 
+::: { .content-visible when-format="revealjs"}
 CLICK
+:::
 
 Don't just say it's reproducible. Prove it!
 :::
@@ -767,7 +935,7 @@ The Jupyter notebook approach which mixes these two concerns. You end-up with a 
 
 Of course you can edit in Jupyter, but it doesn't arise as naturally because the workflow doesn't require it.
 
-You can still do literate programming without notebooks. You can integrate code and documentation using alternate tools like `quarto` for creating articles, presentations or books reproducibly. You can start from your report and develop backwards, pulling the analysis into shape. For those that haven't tried it yet I'd also recommend building packages in R for any non-trivial code as you can use tools like `ROxygen` to do documentation-driven design. Before you write any code you start with a vignette explaining how to use it which helps to ensure your syntax and semantics are intuitive and well-factored. Then you can pull the implementation it into existence. Likewise RDocs let you document each function with examples that are executed as part of the package build process. This let's you do "specification by example" along with your unit tests.
+You can still do literate programming without notebooks. You can integrate code and documentation using alternate tools like `quarto` for creating articles, presentations or books reproducibly. You can start from your report and develop backwards, pulling the analysis into shape. For those that haven't tried it yet I'd also recommend building packages in R for any non-trivial code as you can use tools like `ROxygen` to do documentation-driven design. Before you write any code you start with a vignette explaining how to use it which helps to ensure your syntax and semantics are intuitive and well-factored. You can then pull the implementation into existence. Likewise RDocs let you document each function with examples that are executed as part of the package build process. This let's you do "specification by example" along with your unit tests.
 
 By separating reproducible literate programming from ephemeral interactive exploration we get the best of both worlds and avoid the risks of one contaminating the other. We can re-run the build process from scratch in an isolated environment and can't get ourselves twisted up with state mutation. If it's too slow to rebuild and threatening our fast feedback cycle then we can cache chunks or write intermediate results out to disk.
 :::
@@ -784,6 +952,10 @@ By separating reproducible literate programming from ephemeral interactive explo
 - Automate workflows for continuous development
 :::
 
+
+
+
+::: { .content-visible when-format="revealjs"}
 ## { .center background-image="images/kendal-hnysCJrPpkc-unsplash.jpg" style="color: whitesmoke" }
 
 ::: {.r-fit-text}
@@ -796,4 +968,5 @@ Functional Reproducibility
 [robsteranium.github.io/functional-reproducibility](https://robsteranium.github.io/functional-reproducibility/){ style="font-weight: 100; font-size: 1em; color: whitesmoke"}
 
 [robin@infonomics.ltd.uk]{ style="font-weight: 100; font-size: 1em;"}
+:::
 
