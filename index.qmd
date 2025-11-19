@@ -6,16 +6,20 @@ format:
   revealjs:
     standalone: true
     output-file: slides.html
+    code-line-numbers: false
+    css: tabsets.css
   html:
     title: "Functional Reproducibility"
     subtitle: "Engineering reproducibility in the face of entropy"
     author: "Robin Gower"
-    abstract: Presented at Berlin R User Group March-2024
+    abstract: Presented at PyData Berlin November-2025 and Berlin R User Group March-2024
     title-slide-attributes: 
     data-background-image: images/kendal-hnysCJrPpkc-unsplash.jpg
     standalone: true
     output-file: index.html
     toc: true
+    code-line-numbers: false
+    css: tabsets.css
     #embed-resources: true
     header-includes: |
       <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,6 +55,8 @@ Functional Reproducibility
 
 [robin@infonomics.ltd.uk]{ style="font-weight: 100; font-size: 1em;"}
 
+[robingower.com]{ style="font-weight: 100; font-size: 1em;"}
+
 ::: footer
 Photo by <a href="https://unsplash.com/@hikendal?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Kendal</a> on <a href="https://unsplash.com/photos/green-ferns-on-a-black-background-hnysCJrPpkc?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
 :::
@@ -85,7 +91,7 @@ Just because your analysis is executable, it doesn't mean the results are reprod
 
 Data ages. Libraries change. Machines differ. Servers go down. Bits rot. Entropy is inescapable.
 
-We can learn how to engineer reproducibility by drawing on techniques from functional programming and the MLOps movement. The code examples are provided in R <!-- and Python --> but the lessons apply to any language.
+We can learn how to engineer reproducibility by drawing on techniques from functional programming and the MLOps movement. The code examples are provided in <!-- R --> Python but the lessons apply to any language.
 :::
 
 
@@ -174,7 +180,7 @@ The picture shows a thought experiment. Maxwell's daemon opens a door between tw
 ::: {.content-visible when-format="revealjs"}
 ## { background-image="images/ruins.jpg" }
 
-::: footer
+::: { .footer style="color: #FFFFFF" }
 Photo by <a href="https://unsplash.com/@dmey503?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Dan Meyers</a> on <a href="https://unsplash.com/photos/abandoned-industrial-building-interior-Wy0RUh-1DyM?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
 :::
 :::
@@ -195,7 +201,7 @@ In an isolated system, absent any magical demons, while the amount of energy rem
 
 ## {background-color="#000000" background-image="images/webb-deep-field.png"}
 
-::: footer
+::: { .footer style="color: #FFFFFF" }
 [Advanced Deep Extragalactic Survey](https://webbtelescope.org/contents/media/images/2023/127/01H1Q1CGJD51CDJTK2NHJWD06M) - NASA, ESA, CSA
 
 Brant Robertson (UC Santa Cruz), Ben Johnson (CfA), Sandro Tacchella (Cambridge), Marcia Rieke (University of Arizona), Daniel Eisenstein (CfA)
@@ -210,6 +216,7 @@ Brant Robertson (UC Santa Cruz), Ben Johnson (CfA), Sandro Tacchella (Cambridge)
 Eventually our universe will reach a state of complete disorder. A uniform cold vacuum with no exploitable differences. The heat death of the universe.
 
 > This is the way the world ends, not with a bang but a whimper - T. S. Eliot
+
 :::
 
 
@@ -258,12 +265,12 @@ This is all very well, but - as beautiful as this formula is - it's not much use
 ## { transition="slide-in" }
 :::
 
-```{r rnorm-density, echo=T, eval=T}
+```{r rnorm-density, echo=F, eval=T}
 plot(dnorm, -3, 3, main="The Standard Normal Distribution")
 ```
 
 ::: notes
-We can put that maths to use by using R to plot density of the normal distribution. Here I've used the default mean of zero and standard deviation of 1 which gives us the "Standard Normal".
+We can put that maths to use by using code to plot the probability density of the normal distribution. Here I've used the default mean of zero and standard deviation of 1 which gives us the "Standard Normal".
 
 In practical terms we need to do computations to use maths and computers are certainly subject to entropy.
 
@@ -342,23 +349,45 @@ Which of these statements is reproducible?
 
 Reading from a database:
 
-```{r read-database, eval=F}
+::: {.panel-tabset group="language"}
+## Python
+```python
+users = pd.read_sql_table('users', connection)
+```
+
+## R
+```r
 users <- DBI::dbReadTable(connection, "users")
 ```
+:::
 
 Drawing a sample at random:
 
-```{r sample-randomly, eval=F}
+::: {.panel-tabset group="language"}
+## Python
+```python
+coin_tosses = random.choices(['heads','tails'], 10)
+```
+
+## R
+```r
 coin_tosses <- sample(c("heads","tails"), 10, replace = TRUE)
 ```
+:::
 
 Writing to a filesystem:
 
-```{r write-file, eval=F}
-readr::write_csv(data, "output.csv")
+::: {.panel-tabset group="language"}
+## Python
+```{python write-file-py, eval=F}
+pd.to_csv(data, 'output.csv')
 ```
 
-
+## R
+```{r write-file-r, eval=F}
+readr::write_csv(data, "output.csv")
+```
+:::
 
 
 ::: {.content-visible when-format="revealjs"}
@@ -452,7 +481,19 @@ This mightn't be very obvious if it's the first time you're hearing this, so let
 
 ## Non-local state makes functions sensitive to context
 
-```{r counter-global, eval=T}
+::: {.panel-tabset group="language"}
+## Python
+```{python counter-global-py, eval=T}
+counter = 0
+
+def show_count():
+  print(f'Count is {counter}')
+
+show_count()
+```
+
+## R
+```{r counter-global-r, eval=T}
 counter <- 0
 
 show_count <- function() {
@@ -461,29 +502,53 @@ show_count <- function() {
 
 show_count()
 ```
+:::
 
 Sometime later...
-```{r counter-global-increment, eval=T}
+
+::: {.panel-tabset group="language"}
+## Python
+```{python counter-global-increment-py, eval=T}
+counter = counter + 1
+
+show_count() # now returns a different value
+```
+
+## R
+```{r counter-global-increment-r, eval=T}
 counter <- counter + 1
 
-show_count()
+show_count() # now returns a different value
 ```
+:::
 
 ::: notes
 Here we can see a side-effecting `show_count()` function. It implicitly depends on the `counter` variable that is defined in the global scope. This means that it's result depends on the context in which it is run.
 
 Any time you call `show_count()` you could get a different result. It isn't reproducible. If the value of `counter` changes, then so does the result.
 
-This function also has no return value. The call to `cat` or `print` is itself a side-effect. In this case a `NULL` is returned invisibly. We can't use it in a reproducible pipeline.
+This function also has no return value. The call to print out the result is itself a side-effect. In this case a null value is returned. We can't use it in a reproducible pipeline.
 
-This might seem a bit contrived, but you could instead imagine the counter as being a data frame that you're mutating in place.
+This might seem a bit contrived but using side-effects like this is it's quite common. I count [51 pandas methods](https://pandas.pydata.org/pandas-docs/stable/search.html?q=inplace) offering `inplace` mutation of their argument.
 
 Let's refactor this into a pure function.
 :::
 
 ## Explicit inputs/ outputs let us separate code and context
 
-```{r counter-local, eval=T}
+::: {.panel-tabset group="language"}
+## Python
+```{python counter-local-py, eval=T}
+counter = 0
+
+def describe_count(count):
+  return f'Count if {count}' # interpolation
+
+print(describe_count(counter)) # rendering
+```
+
+## R
+```{r counter-local-r, eval=T}
 counter <- 0
 
 describe_count <- function(count) {
@@ -492,26 +557,38 @@ describe_count <- function(count) {
 
 print(describe_count(counter))
 ```
+:::
 
 Sometime later...
-```{r counter-local-increment, eval=T}
+
+::: {.panel-tabset group="language"}
+## Python
+```{python counter-local-increment-py, eval=T}
+counter = counter + 1
+
+print(describe_count(counter)) # receives a different value
+```
+
+## R
+```{r counter-local-increment-r, eval=T}
 counter <- counter + 1
 
-print(describe_count(counter))
+print(describe_count(counter)) # receives a different value
 ```
+:::
 
 ::: footer
 [The Value of Values - Rich Hickey @ JaxConf 2012](https://www.youtube.com/watch?v=-6BsiVyC1kM)
 :::
 
 ::: notes
-We define `describe_count` in terms of the `count` value. Now the dependency on this variable is explicit. Given the same input, this function will always return the same output. It's reproducible. Indeed it now returns an explicit output value reproducibly. The output is now data, not a side-effect so we can use it elsewhere. The call to `print` happens outside of the core logic of text rendering.
+We define `describe_count` in terms of the `count` value. Now the dependency on this variable is explicit. Given the same input, this function will always return the same output. It's reproducible. Indeed it now returns an explicit output value reproducibly. The output is now data, not a side-effect so we can use it elsewhere. The call to `print` happens outside of the core logic of string interpolation.
 
-Again this example is a bit contrived but the same rationale motivates the `broom` package which extracts tabular data from models so that you can manipulate results programmatically where the base R `summary` method only prints it's tabular output to the screen.
+<!-- Again this example is a bit contrived but the same rationale motivates the `broom` package which extracts tabular data from models so that you can manipulate results programmatically where the base R `summary` method only prints it's tabular output to the screen. -->
 
-The code on this slide has essentially the same functionality as before but because it's now reproducible it's much easier to reason about. We've made the dependency on the context explicit rather than implicitly relying on global state. The focus of the function is on the _value_ of the `count`, not the variable and it's place in memory.
+The code on this slide has essentially the same functionality as before but now that it's reproducible it's much easier to reason about. We've made the dependency on the context explicit rather than implicitly relying on global state. The focus of the function is on the _value_ of the `count`, not the variable and it's place in memory.
 
-Context mutations like this are exactly what's happening when you reassign a variable or values within a data frame.
+State mutations like this are exactly what's happening when you reassign a variable or values within a data frame.
 
 This example might look trivial but state mutation is a pernicious source of subtle bugs. Mutating state in place may yield savings in computer memory, but it imposes costs on the human capacity to reason about the flow of data through your code as you try to keep a track of a running program in your mind.
 
@@ -520,15 +597,38 @@ Pure functions operating on immutable data are reproducible. You lose these guar
 
 ## The context isn't always apparent
 
-```{r toss-coins-first, eval=T}
+::: {.panel-tabset group="language"}
+## Python
+```{python toss-coins-first-py, eval=T}
+import random
+
+def toss_coins(n):
+    return random.choices(['heads','tails'], k=n)
+
+toss_coins(5)
+```
+
+## R
+```{r toss-coins-first-r, eval=T}
 toss_coins <- function(n) sample(c("heads","tails"), n, replace = TRUE)
 
 toss_coins(5)
 ```
+:::
+
 Sometime later...
-```{r toss-coins-later, eval=T}
-toss_coins(5)
+
+::: {.panel-tabset group="language"}
+## Python
+```{python toss-coints-later-py, eval=T}
+toss_coins(5) # result differs
 ```
+
+## R
+```{r toss-coins-later-r, eval=T}
+toss_coins(5) # result differs
+```
+:::
 
 ::: footer
 Pseudo-randomness from a [Mersenne Twister](https://en.wikipedia.org/wiki/Mersenne_Twister)
@@ -537,7 +637,7 @@ Pseudo-randomness from a [Mersenne Twister](https://en.wikipedia.org/wiki/Mersen
 ::: notes
 Some side effects are not as obvious.
 
-The `sample` function depends not just on the arguments you pass it but also the state of a random number generator (RNG).
+The <!--`sample`--> `random.choices` function depends not just on the arguments you pass it but also the state of a random number generator (RNG).
 
 In software the RNG is not truly random but rather a pseudo-random process. It gives highly erratic results but follows [a predictable process](https://en.wikipedia.org/wiki/Mersenne_Twister) if you know the starting state. The starting state is seeded by some source that varies such as the date or a hardware source like `/dev/random` which [collects noise from device drivers](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/drivers/char/random.c?id=refs/tags/v3.15.6#n52).
 
@@ -548,24 +648,48 @@ Indeed each time I render *this document* I get a different set of coin tosses. 
 
 ## We can make the context explicit
 
-```{r toss-coins-seed-first, eval=T}
+::: {.panel-tabset group="language"}
+## Python
+```{python toss-coins-seed-first-py, eval=T}
+random.seed(1234) # set state deterministically
+
+toss_coins(5)
+```
+
+## R
+```{r toss-coins-seed-first-r, eval=T}
 set.seed(1234) # set state deterministically
 
 toss_coins(5)
 ```
+:::
+
 Sometime later...
-```{r toss-coins-seed-later, eval=T}
+
+::: {.panel-tabset group="language"}
+## Python
+```{python toss-coins-seed-later-py, eval=T}
+random.seed(1234) # reset the state again
+
+toss_coins(5) # result matches
+```
+
+## R
+```{r toss-coins-seed-later-r, eval=T}
 set.seed(1234) # reset the state again
 
-toss_coins(5)
+toss_coins(5) # result matches
 ```
+:::
+
+
 
 ::: footer
 [How hardware seeds `/dev/random`](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/drivers/char/random.c?id=refs/tags/v3.15.6#n52)
 :::
 
 ::: notes
-We can make this function call reproducible by fixing the initial state of the random number generator to a constant value with `set.seed`.
+We can make this function call reproducible by fixing the initial state of the random number generator to a constant value with <!-- `set.seed` --> `random.seed`.
 
 This level of purity may be helpful from an engineering perspective (for example this slide has a consistent checksum meaning it can be cached), but it would completely undermine certain analytical procedures. For example in cross-validation where we want to see the test/ train split vary to ensure we're not over-fitting a statistical model. We forego reproducibility in resampling in an effort to achieve reproducibility on out-of-sample predictions.
 
@@ -574,21 +698,34 @@ We might not always want perfect reproducibility. The key is in making that choi
 
 ## I/O is side-effecting
 
-::: incremental
 Input is a side-effect
 
-```{r read-csv}
+::: {.panel-tabset group="language"}
+## Python
+```python
+df = pandas.read_csv('/home/robin/data-290224-final.csv')
+```
+## R
+```r
 df <- readr::read_csv("/home/robin/data-290224-final.csv")
 ```
 :::
 
-::: incremental
+
 Output is a side-effect
 
-```{r write-csv}
+::: {.panel-tabset group="language"}
+## Python
+```python
+result.to_csv('~/results/output.csv')
+```
+
+## R
+```r
 readr::write_csv(result, "~/results/output.csv")
 ```
 :::
+
 
 ::: notes
 A more ubiquitous source of side-effects is I/O (input/ output). This doesn't just apply to third-party APIs or our own database, even the filesystem is non-local state as far as our programs are concerned.
@@ -606,31 +743,61 @@ These problems become all the more apparent with APIs or databases where network
 
 ## Dependency-injection is explicit
 
-```{r global-connection}
+::: {.panel-tabset group="language"}
+## Python
+```python
+import sqlalchemy
+
+my_engine = create_engine(...)
+my_conn = my_engine.connect()
+```
+## R
+```r
 library(DBI)
 
 my_conn <- dbConnect(...)
 ```
+:::
 
 Instead of relying on global state:
 
-```{r get-global-connection}
-get_data <- function() {
+::: {.panel-tabset group="language"}
+## Python
+```python
+def users:
+  return pd.read_sql_table('users', my_conn)
+
+users()
+```
+## R
+```r
+users <- function() {
   dbReadTable(my_conn, "users")
 }
 
-get_data()
+users()
 ```
+:::
 
 We can make dependencies explicit:
 
-```{r get-local-connection}
-get_data <- function(connection) {
+::: {.panel-tabset group="language"}
+## Python
+```python
+def users(connection):
+  return pd.read_sql_table('users', connection)
+
+users(my_conn)
+```
+## R
+```r
+users <- function(connection) {
   dbReadTable(connection, "users")
 }
 
-get_data(my_conn)
+users(my_conn)
 ```
+:::
 
 ::: notes
 The problem isn't that these side-effects exist; they're necessary.
@@ -639,30 +806,51 @@ The problem is that when they're implicit they tend to hide dependencies.
 
 We can make them explicit with techniques like dependency injection. The function receives a database connection, for example, as an input instead of relying on it existing in the program's global state.
 
-Now the function declares it's requirements. It draws attention to potential side-effects and forces us to think about them. Here we can see that `get_data` will need us to manage the connection's lifecycle rather than taking it for granted.
+Now the function declares its requirements. It draws attention to potential side-effects and forces us to think about them. Here we can see that the `users` method will need us to manage the connection's lifecycle rather than taking it for granted.
 
-The code is more modular. We can re-use this code within the same program allowing us to get users from a test or staging database as well.
+The code is more modular. We can re-use this code to get a collection of users from more than one database within the same program.
 :::
 
 ## Execution context is explicit
 
 Command-line arguments
 
+::: {.panel-tabset group="language"}
+## Python
+```bash
+python -m pipeline input.csv output.parquet
+```
+## R
 ```{bash cli-args}
 R -f pipeline.r input.csv output.parquet
 ```
+:::
 
 Environment variables
 
+::: {.panel-tabset group="language"}
+## Python
+```bash
+env DB="http://user:pw@localhost:1337" python -m pipeline
+```
+## R
 ```{bash env-vars}
 env DB="http://user:pw@localhost:1337" R -f pipeline.r
 ```
+:::
 
 Configuration data
 
+::: {.panel-tabset group="language"}
+## Python
+```bash
+python -m pipeline configuration.yaml
+```
+## R
 ```{bash configuration}
 R -f pipeline.r configuration.yaml
 ```
+:::
 
 ::: footer
 [https://12factor.net/](https://12factor.net/)
@@ -871,7 +1059,7 @@ A build system runs your workflow recording the versions of the input data, sour
 CLICK
 :::
 
-This requires that the process of assembling your dependencies is automated and reproducible itself. No more hunting through messages or chasing colleagues to find the random excel file that makes the pipeline work. You can't expect a build server to study the readme and figure it out for themselves. Tacit knowledge must be explicitly codified. You can't claim that everything's fine just because "it works on my machine". The build server is a shared consensus on configuration. A canonical source you can refer to to see how things work. Automation enables collaboration.
+This requires that the process of assembling your dependencies is automated and reproducible itself. No more hunting through messages or chasing colleagues to find the random excel file that makes the pipeline work. You can't expect a build server to study the readme and figure it out for itself. Tacit knowledge must be explicitly codified. You can't claim that everything's fine just because "it works on my machine". The build server is a shared consensus on configuration. A canonical source you can refer to to see how things work. Automation enables collaboration.
 
 ::: { .content-visible when-format="revealjs"}
 CLICK
@@ -927,17 +1115,17 @@ I should start by saying that exploratory data analysis doesn't need to be repro
 ![](images/rstudio.png){ .r-stretch }
 
 ::: notes
-This is where REPL-driven development shines. In RStudio, Emacs, or VS Code you have two windows: one to edit code (here on the left) and the other to run it (on the right). You send code from the editor to the console in a read-evaluate-print-loop process: the code it's read and the evaluated by the R interpreter with the result printed inline in the console, we then loop back to a prompt ready for more input.
+This is where REPL-driven development shines. In RStudio, Emacs, or VS Code you have two windows: one to edit code (here on the left) and the other to run it (on the right). You send code from the editor to the console in a read-evaluate-print-loop process: the code is read and evaluated by the interpreter with the result printed out to the console, we then loop back to a prompt ready for more input.
 
-The REPL let's us write code experimentally - we can execute each line to confirm it works as intended. You can tweak code in the REPL console until you've got it right. Once you find something you want to use, share or just keep for future reference you can copy it back up to the editor. This let's us iterate quickly in a carefree, non-reproducible way before finding something worth making reproducible. We can explore methods without needing to worry about architecture.
+The REPL let's us write code experimentally - we can execute each line to confirm it works as intended. You can tweak code at the REPL's prompt until you've got it right. Once you find something you want to use, share or just keep for future reference you can copy it back up to the editor. This let's us iterate quickly in a carefree, non-reproducible way before finding something worth making reproducible. We can explore methods without needing to worry about architecture.
 
-The Jupyter notebook approach which mixes these two concerns. You end-up with a long document full of half-discarded experiments, which invariably becomes dependent on a non-linear execution sequence that's impossible to reproduce. People don't tend to think or write code linearly, and we should embrace that not punish it. Editing is a fundamental programming skill.
+The Jupyter notebook approach mixes these two concerns. You end-up with a long document full of half-discarded experiments, which invariably becomes dependent on a non-linear execution sequence that's impossible to reproduce. People don't tend to think or write code linearly, and we should embrace that not punish it. Editing is a fundamental programming skill.
 
 Of course you can edit in Jupyter, but it doesn't arise as naturally because the workflow doesn't require it.
 
-You can still do literate programming without notebooks. You can integrate code and documentation using alternate tools like `quarto` for creating articles, presentations or books reproducibly. You can start from your report and develop backwards, pulling the analysis into shape. For those that haven't tried it yet I'd also recommend building packages in R for any non-trivial code as you can use tools like `ROxygen` to do documentation-driven design. Before you write any code you start with a vignette explaining how to use it which helps to ensure your syntax and semantics are intuitive and well-factored. You can then pull the implementation into existence. Likewise RDocs let you document each function with examples that are executed as part of the package build process. This let's you do "specification by example" along with your unit tests.
+You can still do literate programming without notebooks. You can integrate code and documentation using alternate tools like `quarto` for creating articles, presentations or books reproducibly. You can start from your report and develop backwards, pulling the analysis into shape. For those that haven't tried it yet I'd also recommend <!-- building packages in R for any non-trivial code as you can use tools like `ROxygen` to do--> documentation-driven design. Before you write any code you start with a vignette explaining how to use it which helps to ensure your syntax and semantics are intuitive and well-factored. You can then pull the implementation into existence <!--. Likewise RDocs let you --> documenting each function with examples that are executed as part of the package build process. This let's you do "specification by example" along with your unit tests.
 
-By separating reproducible literate programming from ephemeral interactive exploration we get the best of both worlds and avoid the risks of one contaminating the other. We can re-run the build process from scratch in an isolated environment and can't get ourselves twisted up with state mutation. If it's too slow to rebuild and threatening our fast feedback cycle then we can cache chunks or write intermediate results out to disk.
+By separating reproducible, literate programming from ephemeral, interactive exploration we get the best of both worlds and avoid the risks of one contaminating the other. We can re-run the build process from scratch in an isolated environment and can't get ourselves twisted up with state mutation. If it's too slow to rebuild and threatening our fast feedback cycle then we can cache chunks or write intermediate results out to disk.
 :::
 
 
@@ -968,5 +1156,7 @@ Functional Reproducibility
 [robsteranium.github.io/functional-reproducibility](https://robsteranium.github.io/functional-reproducibility/){ style="font-weight: 100; font-size: 1em; color: whitesmoke"}
 
 [robin@infonomics.ltd.uk]{ style="font-weight: 100; font-size: 1em;"}
+
+[robingower.com]{ style="font-weight: 100; font-size: 1em;"}
 :::
 
